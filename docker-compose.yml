@@ -1,29 +1,46 @@
+
+
 services:
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    container_name: frontend
+  mysql:
+    image: mysql:8.0
+    container_name: perfume_mysql
+
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword        # Contraseña del root
+      MYSQL_DATABASE: perfume_db               # Nombre de la base de datos
+      MYSQL_USER: user                         # Usuario
+      MYSQL_PASSWORD: userpassword             # Contraseña del usuario
     ports:
-      - "3000:80"
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql              # Guarda los datos localmente
 
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
     container_name: backend
+    restart: always
+    env_file:
+      - ./backend/.env                         # Cargar las variables del backend
     ports:
       - "5000:5000"
     depends_on:
-      - mongo
-
-  mongo:
-    image: mongo:latest
-    container_name: mongo
-    ports:
-      - "27017:27017"
+      - mysql                                  # Espera a que MySQL esté listo
     volumes:
-      - mongo-data:/data/db
+      - ./backend:/app                         # Mapea tu código local
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: frontend
+    restart: always
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
 
 volumes:
-  mongo-data:
+  mysql_data:
