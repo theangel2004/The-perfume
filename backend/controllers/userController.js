@@ -54,3 +54,74 @@ exports.loginUser = async (req, res) => {
     res.status(500).json({ message: 'Error en el servidor', error: error.message });
   }
 };
+
+
+// ✅ Obtener todos los usuarios (GET)
+exports.getAllUsers = async (req, res) => {
+  try {
+    const users = await User.findAll(); // SELECT * FROM users;
+    res.status(200).json(users);
+  } catch (error) {
+    console.error('❌ Error al obtener usuarios:', error);
+    res.status(500).json({ message: 'Error en el servidor', error: error.message });
+  }
+};
+
+// ✅ Obtener un usuario por ID (GET /api/users/:id)
+exports.getUserById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findByPk(id); // SELECT * FROM users WHERE id = ?
+
+    if (!user) {
+      return res.status(404).json({ message: 'Usuario no encontrado' });
+    }
+
+    res.status(200).json(user);
+  } catch (error) {
+    console.error('❌ Error al obtener usuario:', error);
+    res.status(500).json({ message: 'Error en el servidor', error: error.message });
+  }
+};
+
+// ✅ Editar usuario (PUT /api/users/:id)
+exports.updateUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { username, email, password } = req.body;
+
+    const user = await User.findByPk(id);
+    if (!user) return res.status(404).json({ message: 'Usuario no encontrado' });
+
+    // Actualiza solo los campos que vengan en el body
+    if (username !== undefined) user.username = username;
+    if (email !== undefined) user.email = email;
+    if (password !== undefined) user.password = password;
+
+    await user.save();
+
+    // No devolver la contraseña
+    const userSafe = user.toJSON();
+    delete userSafe.password;
+
+    res.status(200).json({ message: 'Usuario actualizado', user: userSafe });
+  } catch (error) {
+    console.error('❌ Error al actualizar usuario:', error);
+    res.status(500).json({ message: 'Error en el servidor', error: error.message });
+  }
+};
+
+// ✅ Eliminar usuario (DELETE /api/users/:id)
+exports.deleteUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findByPk(id);
+    if (!user) return res.status(404).json({ message: 'Usuario no encontrado' });
+
+    await user.destroy();
+    res.status(200).json({ message: 'Usuario eliminado correctamente' });
+  } catch (error) {
+    console.error('❌ Error al eliminar usuario:', error);
+    res.status(500).json({ message: 'Error en el servidor', error: error.message });
+  }
+};

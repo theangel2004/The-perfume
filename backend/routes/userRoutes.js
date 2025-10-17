@@ -11,5 +11,15 @@ router.post('/register', userController.registerUser);
 // Endpoint: POST /api/users/login
 router.post('/login', userController.loginUser);
 
+// Obtener todos los usuarios
+router.get('/', userController.getAllUsers);
+
+// Obtener un usuario por ID
+router.get('/:id', userController.getUserById);
+
+router.put('/:id', userController.updateUser);
+
+router.delete('/:id', userController.deleteUser);
+
 // Exportamos el enrutador para que server.js lo use
 module.exports = router;
